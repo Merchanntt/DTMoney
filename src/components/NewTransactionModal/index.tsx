@@ -6,7 +6,7 @@ import Outcome from '../../assets/outcome.svg'
 import CloseButton from '../../assets/close.svg'
 
 import { Container, TransactionButtons, TransactionCard } from './styles';
-import { api } from '../../services/api';
+import { useTransaction } from '../../hooks/useTransaction';
 
 interface TransactionModalProps {
   isModalOpen: boolean;
@@ -14,23 +14,29 @@ interface TransactionModalProps {
 }
 
 export function TransactionModal({isModalOpen, onCloseModal}: TransactionModalProps) {
+  const {createNewTransaction} = useTransaction()
+
   const [title, setTitle] = useState('')
-  const [value, setValue] = useState(0)
+  const [amount, setAmount] = useState(0)
   const [category, setCategory] = useState('')
 
   const [type, setType] = useState('deposit')
 
-  function HandleSubmitTransactionForm (event: FormEvent) {
+  async function HandleSubmitTransactionForm (event: FormEvent) {
     event.preventDefault()
 
-    const data = {
+    await createNewTransaction({
       title,
-      value,
+      amount,
       category,
       type
-    }
+    })
 
-    api.post('/transactions', data)
+    setTitle('')
+    setAmount(0)
+    setCategory('')
+    setType('deposit')
+    onCloseModal()
   }
 
   return (
@@ -57,8 +63,8 @@ export function TransactionModal({isModalOpen, onCloseModal}: TransactionModalPr
         <input 
           type='number'
           placeholder='Valor'
-          value={value}
-          onChange={(e) => setValue(Number(e.target.value))}
+          value={amount}
+          onChange={(e) => setAmount(Number(e.target.value))}
         />
 
         <TransactionButtons>
